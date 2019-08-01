@@ -1,5 +1,7 @@
 import com.digitalpersona.uareu.*;
 
+import java.sql.SQLException;
+
 /**
  * Fingerprint enrolment for new users
  **/
@@ -26,7 +28,6 @@ public class Enrollment{
         //convert to FMD
         Fmd fmd = Util.convertToFMD(cr.image, Fmd.Format.ANSI_378_2004);
         System.out.println("Scan quality:"+cr.quality);
-        System.out.println(fmd.getData());
         prefmd = new Engine.PreEnrollmentFmd();
         prefmd.fmd = fmd;
         prefmd.view_index = 0;
@@ -36,7 +37,7 @@ public class Enrollment{
     /**
      * Start the enrolling process
      **/
-    public Fmd startEnrolling(){
+    public Fmd startEnrolling() throws SQLException {
         Fmd fmd = null;
         try{
             System.out.println("Device name:"+m_reader.GetDescription().name);
@@ -49,7 +50,7 @@ public class Enrollment{
         } catch (UareUException e) {
             e.printStackTrace();
         }
-
+        System.out.println("Loaded from database");
         return fmd;
     }
 }

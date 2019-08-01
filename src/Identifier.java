@@ -1,4 +1,6 @@
 import com.digitalpersona.uareu.*;
+import java.sql.SQLException;
+import java.util.List;
 
 /**
  * Identify a user by comparing with registered fingerprints
@@ -6,14 +8,14 @@ import com.digitalpersona.uareu.*;
 public class Identifier {
     private Reader m_reader;
     private Engine engine = null;
-    private Fmd[] storedData = new Fmd[1];
-    private int falsepositive_rate;
+    private Fmd[] storedData;
+    private int false_positive_rate;
 
-    public Identifier(Reader reader, Fmd sample, int falsepositive_rate){
+    public Identifier(Reader reader, Fmd sample, int falsepositive_rate) throws SQLException, UareUException {
         this.m_reader = reader;
-        storedData[0] = sample;
+        storedData = loadFingerprints();
         engine = UareUGlobal.GetEngine();
-        this.falsepositive_rate = falsepositive_rate;
+        this.false_positive_rate = falsepositive_rate;
     }
 
     /**
@@ -29,7 +31,7 @@ public class Identifier {
 
             try {
                 //identify the matching candidates
-                Engine.Candidate[] vCandidates = engine.Identify(fmdToIdentify, 0, storedData, falsepositive_rate, 1);
+                Engine.Candidate[] vCandidates = engine.Identify(fmdToIdentify, 0, storedData, false_positive_rate, 1);
                 if(vCandidates.length > 0){
                     //get false match rate
                     int falsematch_rate = engine.Compare(fmdToIdentify, 0, storedData[vCandidates[0].fmd_index], vCandidates[0].view_index);
@@ -48,5 +50,23 @@ public class Identifier {
                 e.printStackTrace();
             }
         }
+    }
+
+    /**
+     * Load all FMD data from DB and reconstruct the FMD objects to identify
+     **/
+    private Fmd[] loadFingerprints() throws SQLException, UareUException {
+        DBHandler dbHandler = new DBHandler();
+        dbHandler.connect();
+        List<DBHandler.Record> records = dbHandler.GetAllFPData();
+        Fmd[] storedData = new Fmd[records.size()];
+
+        //iterate through the fetched data and reconstruct FMD objects
+        for(int i=0; i<records.size(); i++){
+            Fmd fmd = UareUGlobal.GetImporter().ImportFmd(records.get(i).fmdBinary,Fmd.Format.ANSI_378_2004,Fmd.Format.ANSI_378_2004);
+            storedData[i] = fmd;
+        }
+        return storedData;
+
     }
 }

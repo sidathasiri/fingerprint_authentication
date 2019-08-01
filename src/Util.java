@@ -1,5 +1,8 @@
 import com.digitalpersona.uareu.*;
 
+/**
+ * This class contains utility methods to interact with device
+ **/
 public class Util {
     private static Reader reader = null;
 
@@ -26,7 +29,7 @@ public class Util {
 
     /**
      * Connect with the available reader
-     * */
+     **/
     public static void connectToReader(Reader.Priority priority){
         if(reader == null){
             getAvailableReader();
@@ -54,7 +57,7 @@ public class Util {
 
     /**
      * Convert the FID to FMD format
-     * */
+     **/
     public static Fmd convertToFMD(Fid image, Fmd.Format format){
         Engine engine = UareUGlobal.GetEngine();
         Fmd fmd = null;
